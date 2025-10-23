@@ -6,7 +6,7 @@ Bu API, bir "Ziyaretçi Defteri" görevi görerek, `POST` istekleri ile gelen is
 
 **API Endpoint URL:** `https://4exmv6ueil.execute-api.eu-north-1.amazonaws.com/prod`
 
-## Kullanılan Teknolojiler (Teknoloji Stack'i)
+##  Kullanılan Teknolojiler (Teknoloji Stack'i)
 
 * **Infrastructure as Code (IaC):** `AWS SAM (Serverless Application Model)`
 * **İşlem (Compute):** `AWS Lambda`
@@ -15,22 +15,26 @@ Bu API, bir "Ziyaretçi Defteri" görevi görerek, `POST` istekleri ile gelen is
 * **Güvenlik (Security):** `AWS IAM` (En Az Yetki Prensibi ile)
 * **Dil (Language):** `Python 3.10`
 
-## ⚙️ Altyapı ve API Tasarımı
+##  Altyapı ve API Tasarımı
 
 Bu proje, AWS konsolundan manuel olarak *oluşturulmamıştır*. Tüm altyapı (Lambda fonksiyonu, API Gateway endpoint'leri, DynamoDB tablosu ve IAM rolleri), `template.yaml` dosyasında kod olarak tanımlanmış ve `sam deploy` komutu ile deploy edilmiştir.
 
 Bu yaklaşım, altyapının tekrarlanabilir, sürdürülebilir ve hatasız bir şekilde yönetilmesini sağlar.
 
-### API Endpoint'leri:
+### API Endpoint'leri ve Demo Çıktıları:
 
 1.  **`POST /visit`**
     * Yeni bir ziyaretçi kaydı ekler.
     * **İstek Body (JSON):** `{"name": "Arda"}`
-    * **Başarılı Yanıt (201C):** `{"message": "Visit recorded successfully", "item": {"id": "...", "name": "Arda", ...}}`
+    * **Başarılı Yanıt (201 Created):**
+        ![POST İstek Başarılı Yanıtı](assets/api-post-success.png)
 
 2.  **`GET /visits`**
     * Veritabanındaki son ziyaretçileri listeler.
-    * **Başarılı Yanıt (200 OK):** `{"visits": [{"id": "...", "name": "Arda", ...}, ...]}`
+    * **Başarılı Yanıt (200 OK):**
+        ![GET İstek Başarılı Yanıtı](assets/api-get-visits.png)
+
+---
 
 ##  Kurulum ve Deploy
 
