@@ -1,0 +1,62 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Serverless Guestbook API (v2) - AWS SAM
+  Ziyaretçi ekler (POST /visit) ve listeler (GET /visits).
+
+Globals:
+  Function:
+    Timeout: 10 
+
+Resources:
+  # 1. Kaynak: Veritabanımız (DynamoDB)
+  GuestbookTable:
+    Type: AWS::Serverless::SimpleTable
+    Properties:
+      PrimaryKey:
+        Name: id 
+        Type: String
+      TableName: serverless-guestbook-table
+
+  # 2. Kaynak: API Gateway (HTTP API)
+  GuestbookApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      StageName: prod
+
+  # 3. Kaynak: Lambda Fonksiyonumuz (Tüm API mantığı burada)
+  GuestbookFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/ 
+      Handler: app.lambda_handler 
+      Runtime: python3.10
+      Architectures:
+        - x86_64
+      Policies:
+        # Fonksiyonun DynamoDB tablosuna erişim izni (IAM)
+        - DynamoDBCrudPolicy:
+            TableName: !Ref GuestbookTable
+      Environment:
+        # Kodun hangi tabloya bağlanacağını bilmesi için
+        Variables:
+          TABLE_NAME: !Ref GuestbookTable
+      Events:
+        # API Gateway Tetikleyicileri
+        AddVisit:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref GuestbookApi
+            Path: /visit 
+            Method: POST   
+        GetVisits:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref GuestbookApi
+            Path: /visits 
+            Method: GET     
+
+Outputs:
+  GuestbookApiUrl:
+    Description: "API Gateway endpoint URL"
+    Value: !Sub "https://${GuestbookApi}.execute-api.${AWS::Region}.amazonaws.com/prod"

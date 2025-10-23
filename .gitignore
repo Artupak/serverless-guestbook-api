@@ -1,0 +1,9 @@
+# AWS SAM
+.aws-sam/
+samconfig.toml
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
