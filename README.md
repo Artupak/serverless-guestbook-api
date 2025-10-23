@@ -1,44 +1,57 @@
-# ServerlessAws
+# v2: Serverless Ziyaretçi Defteri API (IaC Projesi)
 
+Bu proje, basit bir "Merhaba Dünya" fonksiyonunun (v1), profesyonel, veritabanı entegrasyonlu ve Altyapı olarak Kod (IaC) ile yönetilen bir mikroservise (v2) dönüştürülmüş halidir.
 
-Bu proje, AWS Lambda ve API Gateway kullanılarak geliştirilen sunucusuz bir API ödevidir.
+Bu API, bir "Ziyaretçi Defteri" görevi görerek, `POST` istekleri ile gelen isimleri bir veritabanına kaydeder ve `GET` istekleri ile bu isimleri listeler.
 
-## Fonksiyonun Yaptığı İş
+**API Endpoint URL:** `https://4exmv6ueil.execute-api.eu-north-1.amazonaws.com/prod`
 
-Bu fonksiyon, bir HTTP GET isteği ile tetiklenir. Gelen istekte `?name=...` şeklinde bir sorgu parametresi arar.
+## Kullanılan Teknolojiler (Teknoloji Stack'i)
 
-* Eğer `name` parametresi varsa (örn: `?name=Arda`), kişiselleştirilmiş bir selamlama mesajı döndürür.
-* Eğer `name` parametresi yoksa, varsayılan bir selamlama mesajı döndürür.
+* **Infrastructure as Code (IaC):** `AWS SAM (Serverless Application Model)`
+* **İşlem (Compute):** `AWS Lambda`
+* **API (Network):** `AWS API Gateway` (HTTP API)
+* **Veritabanı (Storage):** `AWS DynamoDB` (NoSQL)
+* **Güvenlik (Security):** `AWS IAM` (En Az Yetki Prensibi ile)
+* **Dil (Language):** `Python 3.10`
 
-Fonksiyon, sonucu `JSON` formatında döndürür.
+## ⚙️ Altyapı ve API Tasarımı
 
-* **Endpoint URL:** `https://0u5clf4z0i.execute-api.eu-north-1.amazonaws.com/default/tsgkodev`
+Bu proje, AWS konsolundan manuel olarak *oluşturulmamıştır*. Tüm altyapı (Lambda fonksiyonu, API Gateway endpoint'leri, DynamoDB tablosu ve IAM rolleri), `template.yaml` dosyasında kod olarak tanımlanmış ve `sam deploy` komutu ile deploy edilmiştir.
 
-## Nasıl Deploy Edilir?
+Bu yaklaşım, altyapının tekrarlanabilir, sürdürülebilir ve hatasız bir şekilde yönetilmesini sağlar.
 
-Bu fonksiyon AWS Konsolu üzerinden manuel olarak deploy edilmiştir:
-1.  **AWS Lambda:** `Python 3.10` runtime seçilerek `tsgkodev` adında bir fonksiyon oluşturuldu.
-2.  **IAM Rolü:** Fonksiyon için `AWSLambdaBasicExecutionRole` yetkisine sahip bir IAM rolü oluşturuldu. Bu rol, fonksiyonun CloudWatch'a log yazabilmesi için "en az yetki prensibine" uygundur.
-3.  **Kod:** `lambda_function.py` dosyasındaki kod, Lambda konsolundaki kod editörüne yapıştırıldı ve "Deploy" edildi.
-4.  **Tetikleyici:** Fonksiyona "API Gateway" tetikleyicisi eklendi. "HTTP API" tipi ve "Open" güvenlik ayarı seçilerek internetten erişilebilir bir API endpoint'i oluşturuldu.
+### API Endpoint'leri:
 
-![Test Çıktısı Parametreli](GORSELLER/ilk.png)
+1.  **`POST /visit`**
+    * Yeni bir ziyaretçi kaydı ekler.
+    * **İstek Body (JSON):** `{"name": "Arda"}`
+    * **Başarılı Yanıt (201C):** `{"message": "Visit recorded successfully", "item": {"id": "...", "name": "Arda", ...}}`
 
-![Test Çıktısı Parametresiz](GORSELLER/iki.png)
+2.  **`GET /visits`**
+    * Veritabanındaki son ziyaretçileri listeler.
+    * **Başarılı Yanıt (200 OK):** `{"visits": [{"id": "...", "name": "Arda", ...}, ...]}`
 
+##  Kurulum ve Deploy
 
-## Test Senaryosu
+Bu projeyi kendi AWS hesabınızda deploy etmek için AWS CLI, AWS SAM CLI ve Docker gereklidir.
 
-API'yi test etmek için bir tarayıcı veya `curl` kullanılabilir.
+1.  **Projeyi klonlayın:**
+    ```bash
+    git clone [https://github.com/Artupak/serverless-guestbook-api.git](https://github.com/Artupak/serverless-guestbook-api.git)
+    cd serverless-guestbook-api
+    ```
 
-**Input (İstek):**
-```bash
-curl "[https://0u5clf4z0i.execute-api.eu-north-1.amazonaws.com/default/tsgkodev?name=Arda](https://0u5clf4z0i.execute-api.eu-north-1.amazonaws.com/default/tsgkodev?name=Arda)"
-Output;
-{
-  "message": "Merhaba Arda, bu fonksiyon bulutta çalışıyor!",
-  "input_event": { ... }
-}
+2.  **Projeyi derleyin (Build):**
+    `--use-container` bayrağı, derlemenin yerel Python sürümünüz yerine AWS Lambda ortamını taklit eden bir Docker konteyneri içinde yapılmasını sağlar.
+    ```bash
+    sam build --use-container
+    ```
 
+3.  **Projeyi dağıtın (Deploy):**
+    `--guided` bayrağı, deploy işlemi için gerekli ayarları (Stack adı, bölge vb.) interaktif olarak sorar.
+    ```bash
+    sam deploy --guided
+    ```
 
-
+Deploy işlemi tamamlandığında, API Gateway URL'iniz terminal ekranında `Outputs` bölümünde görünecektir.
